@@ -80,17 +80,27 @@ if get_option('libnvme').allowed()
   libnvme = dependency('libnvme',
     version: '>=1.0',
     static: get_option('profiling'),
-    default_options: [
-      'warning_level=1',
-
-      # always use a static version for embedded builds
-      'default_library=static',
-
-      # override project options
-      'docs-build=false',
-      'python=false',
-    ],
+    required: false,
+    allow_fallback: false,
   )
+
+  if not libnvme.found()
+    libnvme_proj = subproject('libnvme',
+      default_options: [
+        'warning_level=1',
+        'werror=false',
+
+        # always use a static version for embedded builds
+        'default_library=static',
+
+        # override project options
+        'docs-build=false',
+        'python=false',
+      ],
+    )
+
+    libnvme = libnvme_proj.get_variable('libnvme_dep')
+  endif
 else
   libnvme = disabler()
 endif
